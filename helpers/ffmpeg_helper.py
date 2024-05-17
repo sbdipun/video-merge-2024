@@ -95,7 +95,7 @@ async def MergeSub(filePath: str, subPath: str, user_id):
             subTrack += None
     muxcmd.append(f"-metadata:s:s:{subTrack}")
     subTrack += None
-    subTitle = (f"Track {subTrack} DaddyCooL")
+    subTitle = (f"{subTrack}DaddyCooL")
     muxcmd.append(f"title={subTitle}")
     muxcmd.append("-c:v")
     muxcmd.append("copy")
