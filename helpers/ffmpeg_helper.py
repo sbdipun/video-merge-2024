@@ -20,7 +20,7 @@ async def MergeVideo(input_file: str, user_id: int, message: Message, format_: s
     :param `format_`: Pass File Extension.
     :return: This will return Merged Video File Path
     """
-    output_vid = f"downloads/{str(user_id)}/[DaddyCooL].{format_.lower()}"
+    output_vid = f"downloads/{str(user_id)}/[@yashoswalyo].{format_.lower()}"
     file_generator_command = [
         "ffmpeg",
         "-f",
@@ -92,10 +92,10 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
-    subTrack = 0   # Fixed track number 
+            subTrack = 0
     muxcmd.append(f"-metadata:s:s:{subTrack}")
-    subTitle = "DaddyCool"
+    subTrack = 0
+    subTitle = f"Track {subTrack} DaddyCooL"
     muxcmd.append(f"title={subTitle}")
     muxcmd.append("-c:v")
     muxcmd.append("copy")
@@ -112,10 +112,17 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     return orgFilePath
 
 
-
-async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
+def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     """
-    Merges video and multiple subtitle files, setting the first subtitle track to "DaddyCool".
+    This method is for Merging Video + Subtitle(s) Together.
+
+    Parameters:
+    - `filePath`: Path to Video file.
+    - `subPath`: Path to subtitile file.
+    - `user_id`: To get parent directory.
+    - `file_list`: List of all input files
+
+    returns: Merged Video File Path
     """
     LOGGER.info("Generating mux command")
     muxcmd = []
@@ -126,32 +133,22 @@ async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
-
+            subTrack += 0
     for i in file_list:
         muxcmd.append("-i")
         muxcmd.append(i)
-
     muxcmd.append("-map")
     muxcmd.append("0:v:0")
     muxcmd.append("-map")
     muxcmd.append("0:a:?")
     muxcmd.append("-map")
     muxcmd.append("0:s:?")
-
-    for j in range(1, len(file_list)):
+    for j in range(1, (len(file_list))):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:s")
         muxcmd.append(f"-metadata:s:s:{subTrack}")
-
-        # Rename subtitle tracks
-        if j == 1:
-            muxcmd.append(f"title=DaddyCool")
-        else:  
-            muxcmd.append(f"title=DaddYcooL")
-
-        subTrack += 1 
-
+        muxcmd.append(f"title=Track {subTrack+1} DaddyCooL")
+        subTrack = 0
     muxcmd.append("-c:v")
     muxcmd.append("copy")
     muxcmd.append("-c:a")
@@ -159,11 +156,9 @@ async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     muxcmd.append("-c:s")
     muxcmd.append("srt")
     muxcmd.append(f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv")
-
     LOGGER.info("Sub muxing")
     subprocess.call(muxcmd)
-    return f"downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv" 
-
+    return f"downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv"
 
 
 def MergeAudio(videoPath: str, files_list: list, user_id):
@@ -192,7 +187,7 @@ def MergeAudio(videoPath: str, files_list: list, user_id):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:a")
         muxcmd.append(f"-metadata:s:a:{audioTracks}")
-        muxcmd.append(f"title=Track {audioTracks+1} - DaddyCooL")
+        muxcmd.append(f"title=Track {audioTracks+1} - tg@yashoswalyo")
         audioTracks += 1
     muxcmd.append(f"-disposition:s:a:{fAudio}")
     muxcmd.append("default")
@@ -204,12 +199,12 @@ def MergeAudio(videoPath: str, files_list: list, user_id):
     muxcmd.append("copy")
     muxcmd.append("-c:s")
     muxcmd.append("copy")
-    muxcmd.append(f"downloads/{str(user_id)}/[DaddyCooL_export.mkv")
+    muxcmd.append(f"downloads/{str(user_id)}/[@yashoswalyo]_export.mkv")
 
     LOGGER.info(muxcmd)
     process = subprocess.call(muxcmd)
     LOGGER.info(process)
-    return f"downloads/{str(user_id)}/[DaddyCooL_export.mkv"
+    return f"downloads/{str(user_id)}/[@yashoswalyo]_export.mkv"
 
 
 async def cult_small_video(video_file, output_directory, start_time, end_time, format_):
@@ -306,7 +301,7 @@ async def take_screen_shot(video_file, output_directory, ttl):
         return None
 
 
-async def extractAudios(path_to_file, user_id):
+async def extractAudios(path_to_file, user_id, og_file_name:str):
     """
     docs
     """
@@ -341,14 +336,12 @@ async def extractAudios(path_to_file, user_id):
                     "("
                     + audio["tags"]["language"]
                     + ") "
-                    + audio["tags"]["title"]
-                    + "."
-                    + audio["codec_type"]
+                    + og_file_name
                     + ".mka"
                 )
                 output_file = output_file.replace(" ", ".")
             except:
-                output_file = str(audio["index"]) + "." + audio["codec_type"] + ".mka"
+                output_file = str(audio["index"]) + "." + og_file_name + ".mka"
             extractcmd.append("-c")
             extractcmd.append("copy")
             extractcmd.append(f"{extract_dir}/{output_file}")
@@ -357,13 +350,13 @@ async def extractAudios(path_to_file, user_id):
         except Exception as e:
             LOGGER.error(f"Something went wrong: {e}")
     if get_path_size(extract_dir) > 0:
-        return extract_dir
+        return extract_dir, audios
     else:
         LOGGER.warning(f"{extract_dir} is empty")
         return None
 
 
-async def extractSubtitles(path_to_file, user_id):
+async def extractSubtitles(path_to_file, user_id, og_file_name:str):
     """
     docs
     """
@@ -398,9 +391,7 @@ async def extractSubtitles(path_to_file, user_id):
                     "("
                     + subtitle["tags"]["language"]
                     + ") "
-                    + subtitle["tags"]["title"]
-                    + "."
-                    + subtitle["codec_type"]
+                    + og_file_name
                     + ".mka"
                 )
                 output_file = output_file.replace(" ", ".")
@@ -409,14 +400,12 @@ async def extractSubtitles(path_to_file, user_id):
                     output_file = (
                         str(subtitle["index"])
                         + "."
-                        + subtitle["tags"]["language"]
-                        + "."
-                        + subtitle["codec_type"]
+                        + og_file_name
                         + ".mka"
                     )
                 except:
                     output_file = (
-                        str(subtitle["index"]) + "." + subtitle["codec_type"] + ".mka"
+                        str(subtitle["index"]) + "." + og_file_name + ".mka"
                     )
             extractcmd.append("-c")
             extractcmd.append("copy")
@@ -426,7 +415,7 @@ async def extractSubtitles(path_to_file, user_id):
         except Exception as e:
             LOGGER.error(f"Something went wrong: {e}")
     if get_path_size(extract_dir) > 0:
-        return extract_dir
+        return extract_dir, subtitles
     else:
         LOGGER.warning(f"{extract_dir} is empty")
         return None
