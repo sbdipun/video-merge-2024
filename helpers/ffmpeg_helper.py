@@ -62,48 +62,37 @@ async def MergeVideo(input_file: str, user_id: int, message: Message, format_: s
 
 async def MergeSub(filePath: str, subPath: str, user_id):
     """
-    This is for Merging Video + Subtitle Together.
-
-    Parameters:
-    - `filePath`: Path to Video file.
-    - `subPath`: Path to subtitile file.
-    - `user_id`: To get parent directory.
-
-    returns: Merged Video File Path
+    Merges video and subtitle file".
     """
     LOGGER.info("Generating mux command")
-    muxcmd = []
-    muxcmd.append("ffmpeg")
-    muxcmd.append("-hide_banner")
-    muxcmd.append("-i")
-    muxcmd.append(filePath)
-    muxcmd.append("-i")
-    muxcmd.append(subPath)
-    muxcmd.append("-map")
-    muxcmd.append("0:v:0")
-    muxcmd.append("-map")
-    muxcmd.append("0:a:?")
-    muxcmd.append("-map")
-    muxcmd.append("0:s:?")
-    muxcmd.append("-map")
-    muxcmd.append("1:s")
+    muxcmd = [
+        "ffmpeg", 
+        "-hide_banner", 
+        "-i", filePath,  
+        "-i", subPath,  
+        "-map", "0:v:0", 
+        "-map", "0:a:?", 
+        "-map", "0:s:?", 
+        "-map", "1:s"
+    ]
+
     videoData = ffmpeg.probe(filename=filePath)
     videoStreamsData = videoData.get("streams")
+
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
             subTrack = 0
-    muxcmd.append(f"-metadata:s:s:{subTrack}")
-    subTrack = 0
-    subTitle = f"Track {subTrack} DaddyCooL"
-    muxcmd.append(f"title={subTitle}")
-    muxcmd.append("-c:v")
-    muxcmd.append("copy")
-    muxcmd.append("-c:a")
-    muxcmd.append("copy")
-    muxcmd.append("-c:s")
-    muxcmd.append("srt")
-    muxcmd.append(f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv")
+
+    muxcmd += [
+        "-metadata:s:s",     # Removed subTrack and added :s to the end to target all subtitle streams
+        "title=DaddyCool",
+        "-c:v", "copy", 
+        "-c:a", "copy", 
+        "-c:s", "srt",
+        f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv"
+    ]
+
     LOGGER.info("Muxing subtitles")
     subprocess.call(muxcmd)
     orgFilePath = shutil.move(
@@ -112,53 +101,43 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     return orgFilePath
 
 
-def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
+
+async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     """
-    This method is for Merging Video + Subtitle(s) Together.
-
-    Parameters:
-    - `filePath`: Path to Video file.
-    - `subPath`: Path to subtitile file.
-    - `user_id`: To get parent directory.
-    - `file_list`: List of all input files
-
-    returns: Merged Video File Path
+    Merges video and multiple subtitle files".
     """
     LOGGER.info("Generating mux command")
     muxcmd = []
     muxcmd.append("ffmpeg")
     muxcmd.append("-hide_banner")
-    videoData = ffmpeg.probe(filename=filePath)
-    videoStreamsData = videoData.get("streams")
-    subTrack = 0
-    for i in range(len(videoStreamsData)):
-        if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 0
+
+    # Input files (video and subtitles)
+    muxcmd += ["-i", filePath]
     for i in file_list:
-        muxcmd.append("-i")
-        muxcmd.append(i)
-    muxcmd.append("-map")
-    muxcmd.append("0:v:0")
-    muxcmd.append("-map")
-    muxcmd.append("0:a:?")
-    muxcmd.append("-map")
-    muxcmd.append("0:s:?")
-    for j in range(1, (len(file_list))):
+        muxcmd += ["-i", i]
+
+    # Map streams
+    muxcmd += ["-map", "0:v:0", "-map", "0:a:?", "-map", "0:s:?"] 
+    for j in range(1, len(file_list)):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:s")
-        muxcmd.append(f"-metadata:s:s:{subTrack}")
-        muxcmd.append(f"title=Track {subTrack+1} DaddyCooL")
-        subTrack = 0
-    muxcmd.append("-c:v")
-    muxcmd.append("copy")
-    muxcmd.append("-c:a")
-    muxcmd.append("copy")
-    muxcmd.append("-c:s")
-    muxcmd.append("srt")
-    muxcmd.append(f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv")
+
+    # Metadata for subtitle tracks
+    for _ in range(len(file_list)-1):  # Assuming the first file is the video
+        muxcmd += ["-metadata:s:s", "title=DaddyCool"]  # Set all subtitle titles to "DaddyCool"
+
+    # Codec and output options
+    muxcmd += [
+        "-c:v", "copy", 
+        "-c:a", "copy", 
+        "-c:s", "srt", 
+        f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv"
+    ]
+
     LOGGER.info("Sub muxing")
     subprocess.call(muxcmd)
     return f"downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv"
+
 
 
 def MergeAudio(videoPath: str, files_list: list, user_id):
