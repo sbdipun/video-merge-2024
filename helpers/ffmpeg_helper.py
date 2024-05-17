@@ -142,7 +142,7 @@ async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     for j in range(1, len(file_list)):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:s")
-         muxcmd.append(f"-metadata:s:s:{subTrack}")
+        muxcmd.append(f"-metadata:s:s:{subTrack}")
 
         # Rename subtitle tracks
         if j == 1:
