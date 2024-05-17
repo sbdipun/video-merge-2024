@@ -92,11 +92,8 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += None
-    muxcmd.append(f"-metadata:s:s:{subTrack}")
-    subTrack += None
-    subTitle = (f"DaddyCooL")
-    muxcmd.append(f"title={subTitle}")
+    title = DaddyCooL
+    muxcmd.append(f"-metadata:s:s:{title}")
     muxcmd.append("-c:v")
     muxcmd.append("copy")
     muxcmd.append("-c:a")
@@ -133,7 +130,6 @@ def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
     for i in file_list:
         muxcmd.append("-i")
         muxcmd.append(i)
@@ -146,9 +142,8 @@ def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     for j in range(1, (len(file_list))):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:s")
-        muxcmd.append(f"-metadata:s:s:{subTrack}")
-        muxcmd.append(f"title=Track {subTrack+1} - DaddyCooL")
-        subTrack += 1
+        title = DaddyCooL
+        muxcmd.append(f"-metadata:s:s:{title}")
     muxcmd.append("-c:v")
     muxcmd.append("copy")
     muxcmd.append("-c:a")
