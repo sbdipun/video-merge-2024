@@ -92,34 +92,30 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
-    muxcmd.append(f"-metadata:s:s:{title}")
-    title = DaddyCooL
+            subTrack += 1
+    subTrack = 0   # Fixed track number 
+    muxcmd.append(f"-metadata:s:s:{subTrack}")
+    subTitle = "DaddyCool"
+    muxcmd.append(f"title={subTitle}")
     muxcmd.append("-c:v")
     muxcmd.append("copy")
     muxcmd.append("-c:a")
     muxcmd.append("copy")
     muxcmd.append("-c:s")
     muxcmd.append("srt")
-    muxcmd.append(f"./downloads/{str(user_id)}/[DaddyCooL_muxed_video.mkv")
+    muxcmd.append(f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv")
     LOGGER.info("Muxing subtitles")
     subprocess.call(muxcmd)
     orgFilePath = shutil.move(
-        f"downloads/{str(user_id)}/[DaddyCooL_muxed_video.mkv", filePath
+        f"downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv", filePath
     )
     return orgFilePath
 
 
-def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
+
+async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     """
-    This method is for Merging Video + Subtitle(s) Together.
-
-    Parameters:
-    - `filePath`: Path to Video file.
-    - `subPath`: Path to subtitile file.
-    - `user_id`: To get parent directory.
-    - `file_list`: List of all input files
-
-    returns: Merged Video File Path
+    Merges video and multiple subtitle files, setting the first subtitle track to "DaddyCool".
     """
     LOGGER.info("Generating mux command")
     muxcmd = []
@@ -130,30 +126,44 @@ def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
+            subTrack += 1
+
     for i in file_list:
         muxcmd.append("-i")
         muxcmd.append(i)
+
     muxcmd.append("-map")
     muxcmd.append("0:v:0")
     muxcmd.append("-map")
     muxcmd.append("0:a:?")
     muxcmd.append("-map")
     muxcmd.append("0:s:?")
-    for j in range(1, (len(file_list))):
+
+    for j in range(1, len(file_list)):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:s")
-        title = DaddyCooL
-        muxcmd.append(f"-metadata:s:s:{title}")
+         muxcmd.append(f"-metadata:s:s:{subTrack}")
+
+        # Rename subtitle tracks
+        if j == 1:
+            muxcmd.append(f"title=DaddyCool")
+        else:  
+            muxcmd.append(f"title=DaddYcooL")
+
+        subTrack += 1 
+
     muxcmd.append("-c:v")
     muxcmd.append("copy")
     muxcmd.append("-c:a")
     muxcmd.append("copy")
     muxcmd.append("-c:s")
     muxcmd.append("srt")
-    muxcmd.append(f"./downloads/{str(user_id)}/[DaddyCooL_muxed_video.mkv")
+    muxcmd.append(f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv")
+
     LOGGER.info("Sub muxing")
     subprocess.call(muxcmd)
-    return f"downloads/{str(user_id)}/[DaddyCooL_muxed_video.mkv"
+    return f"downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv" 
+
 
 
 def MergeAudio(videoPath: str, files_list: list, user_id):
