@@ -92,10 +92,10 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     subTrack = 0
     for i in range(len(videoStreamsData)):
         if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
+            subTrack += None
     muxcmd.append(f"-metadata:s:s:{subTrack}")
-    subTrack += 1
-    subTitle = f"Track DaddyCooL"
+    subTrack += None
+    subTitle = f"title=Track {subTrack} DaddyCooL""
     muxcmd.append(f"title={subTitle}")
     muxcmd.append("-c:v")
     muxcmd.append("copy")
